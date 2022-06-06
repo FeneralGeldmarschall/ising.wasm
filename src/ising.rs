@@ -9,7 +9,7 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub struct IsingModell {
     S: usize, // Size of Grid row, NxN Spins
-    grid: Vec<Vec<i8>>, // Grid
+    grid: Vec<i8>, // Grid
     B: f32, // external B field
     T: f32, // Temperature
     I: f32, // coppling constant
@@ -26,13 +26,12 @@ impl IsingModell {
     pub fn new(size: usize, b: f32, t: f32, i: f32, up: f64, seed: u64) -> IsingModell {
         //let mut model = IsingModell { N: size, grid: vec![vec![0i8; size]; size], M: (0.0), B: (b), U: (0.0), T: (t), I: (i) , rng: (StdRng::seed_from_u64(seed))};
         let mut rng = StdRng::seed_from_u64(seed);
-        let mut vector: Vec<Vec<i8>> = Vec::with_capacity(size);
+        let mut vector: Vec<i8> = Vec::with_capacity(size * size);
         let mut m = 0.0;
-        for x in 0..size {
-            vector.push(Vec::with_capacity(size));
-            for y in 0..size {
+        for _y in 0..size {
+            for _x in 0..size {
                 let rng_spin = rng.gen_bool(up) as i8 * 2 - 1;
-                vector[x].push(rng_spin);
+                vector.push(rng_spin);
                 m += rng_spin as f32;
             }
         }
@@ -42,12 +41,13 @@ impl IsingModell {
         let mut i_energy = 0.0;
         for x in 0..size {
             for y in 0..size {
-                b_energy += vector[x][y] as f32;
+                let y_idx = y * size;
+                b_energy += vector[y_idx + x] as f32;
                 let xp = (x + 1) % size;
                 let yp = (y + 1) % size;
                 let xm = (x + size  - 1) % size;
                 let ym = (y + size  - 1) % size;
-                i_energy += (vector[x][y] * (vector[xp][y] + vector[xm][y] + vector[x][yp] + vector[x][ym])) as f32; 
+                i_energy += (vector[y_idx + x] * (vector[y_idx + xp] + vector[y_idx + xm] + vector[yp * size + x] + vector[ym * size + x])) as f32; 
             }
         }
 
@@ -62,7 +62,7 @@ impl IsingModell {
     // Runs mc_steps steps of the Metropolis algorithm
     pub fn run(&mut self, mc_steps: u32) {
         // Create plot directory only if we intend to plot the grid
-        for i in 0..mc_steps {
+        for _i in 0..mc_steps {
 
             // In each MC step we try S*S random flips
             for _j in 0..(self.S*self.S) {
@@ -150,13 +150,14 @@ impl IsingModell {
 
     // Flips spin at x, y and updates M
     fn flip_spin(&mut self, x: usize, y: usize) {
-        self.set_spin(x, y, self.grid[x][y] * -1i8);
-        self.M += (2 * self.grid[x][y]) as f32;
+        self.set_spin(x, y, self.grid[self.get_idx(x, y)] * -1i8);
+        self.M += (2 * self.grid[self.get_idx(x, y)]) as f32;
     }
 
     // Sets the spin to value... seems pretty useless, maybe remove later
     fn set_spin(&mut self, x: usize, y: usize, value: i8) {
-        self.grid[x][y] = value;
+        let idx: usize = self.get_idx(x, y);
+        self.grid[idx] = value;
     }
 
     // Calculates the Energy of the current configuration
@@ -178,12 +179,25 @@ impl IsingModell {
     //}
 
     // Calculates the Energy you would need to flip the Spin at [x][y]
-    fn calc_dU(&self, x: usize, y: usize) -> f32{
+    fn calc_dU(&self, x: usize, y: usize) -> f32 {
         let xp = (x + 1) % self.S;
         let yp = (y + 1) % self.S;
         let xm = (x + self.S - 1) % self.S;
         let ym = (y + self.S - 1) % self.S;
-        return 2.0 * self.B * self.grid[x][y] as f32 + 2.0 * self.I * self.grid[x][y] as f32 * (self.grid[xp][y] + self.grid[xm][y] + self.grid[x][yp] + self.grid[x][ym]) as f32;
+        return 2.0 * self.B * self.grid[self.get_idx(x, y)] as f32 
+             + 2.0 * self.I * self.grid[self.get_idx(x, y)] as f32 * (self.grid[self.get_idx(xp, y)] 
+                                                                    + self.grid[self.get_idx(xm, y)] 
+                                                                    + self.grid[self.get_idx(x, yp)] 
+                                                                    + self.grid[self.get_idx(x, ym)]) as f32;
+    }
+
+    #[inline(always)]
+    fn get_idx(&self, x: usize, y: usize) -> usize {
+        return y * self.S + x;
+    }
+
+    pub fn grid_ptr(&self) -> *const i8 {
+        return self.grid.as_ptr();
     }
 
     pub fn get_M_avg(&self) -> f64 {
@@ -202,8 +216,12 @@ impl IsingModell {
         return self.B as f64;
     }
 
+    pub fn get_S(&self) -> usize {
+        return self.S;
+    }
+
     pub fn get_Spin_at(&self, x: usize, y: usize) -> i8 {
-        return self.grid[x][y];
+        return self.grid[self.get_idx(x, y)];
     }
 
     pub fn set_T(&mut self, newT: f64) {

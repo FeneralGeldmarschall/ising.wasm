@@ -19,6 +19,11 @@
 
 ## About
 
+A 2D Ising Simulation written in Rust and rendered in JS. Combined through the power of <a href="https://webassembly.org/">Webassembly</a>
+Rendering part is heavily inspired by https://github.com/mattbierbaum/ising.js
+
+CLI Version with Plotting Functionality available <a href="https://gitlab.com/Justus557/cp-ising">here</a>
+
 [**📚 Read this template tutorial! 📚**][template-docs]
 
 This template is designed for compiling Rust libraries into WebAssembly and

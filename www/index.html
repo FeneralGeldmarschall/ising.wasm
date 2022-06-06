@@ -1,12 +1,20 @@
 <!DOCTYPE html>
 <html>
-  <head>
+    <head>
     <meta charset="utf-8">
-    <title>Hello wasm-pack!</title>
-  </head>
-  <body>
-    <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
-    <script src="./bootstrap.js"></script>
-    <canvas id="grid" width=512 height=512></canvas>
-  </body>
+    <title>Ising</title>
+    <link rel="stylesheet" href="./style.css">
+    </head>
+    <body>
+        <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+        <script src="./bootstrap.js"></script>
+        <canvas id="grid" width=512 height=512></canvas>
+        <div id="inputs">
+            <div>
+                <label id="temp" class="label" for="temp" title="Temperature">Temperature</label>
+                <input class="inputrange" type="range" id="temp_input" min=0 max=10 step=0.00001 value=0></input>
+                <label id="temp_label" class="label" for="temp" title="Temperature"></label>
+            </div>
+        </div>
+    </body>
 </html>

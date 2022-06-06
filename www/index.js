@@ -1,10 +1,11 @@
 import { IsingModell } from "ising-webcanvas";
+import { memory } from "ising-webcanvas/ising_webcanvas_bg";
 
 
-var S = 64;
+var S = 128;
 var B = 0.0;
 var I = 1.0;
-var T = 2.27;
+var T = 0;
 var Up = 0.5;
 var Seed = BigInt(123456789);
 var ising = IsingModell.new(S, B, T, I, Up, Seed);
@@ -28,6 +29,10 @@ var fps, fpsInterval, startTime, now, then, elapsed;
 }*/
 
 function init() {
+    const temp_input = document.getElementById("temp_input");
+    temp_input.addEventListener("change", update_temp);
+    temp_input.addEventListener("input", update_temp);
+    update_temp();
     start_animation(20);
     //requestAnimationFrame(renderLoop);
 }
@@ -36,81 +41,49 @@ function start_animation(fps) {
     fpsInterval = 1000 / fps;
     then = window.performance.now();
     startTime = then;
-    console.log(startTime);
+    //console.log(startTime);
     renderLoop();
 }
 
-const renderLoop = function() {
+function renderLoop() {
     if (stop) {
         return;
     }
-
-    requestAnimationFrame(renderLoop);
+    then = window.performance.now();
+    ising.run(1);
     now = window.performance.now();
     elapsed = now - then;
-
-    if (elapsed > fpsInterval) {
-
-        // Get ready for next frame by setting then=now, but...
-        // Also, adjust for fpsInterval not being multiple of 16.67
-        then = now - (elapsed % fpsInterval);
-
-        // draw stuff here
-
-
-        // TESTING...Report #seconds since start and achieved fps.
-        var sinceStart = now - startTime;
-        var currentFps = Math.round(1000 / (sinceStart / ++frameCount) * 100) / 100;
-        console.log(currentFps);
-        ising.run(16);
-        drawGridToCanvas();
-    }
-
-    //let ising = IsingModell.new(S, B, T, I, Up, Seed);
-    //ising.run(16);
-    //drawGridToCanvas(ising);
-    //requestAnimationFrame(renderLoop);
+    drawGridToCanvas();
+    requestAnimationFrame(renderLoop);
 }
 
 function drawGridToCanvas() {
+    // Get a pointer to the grid an access the spins
+    // in the memory directly instead of calling a helper function
+    // Should make code a bit faster (?)
+    let gridsize = ising.get_S();
+    const gridPtr = ising.grid_ptr();
+    const grid = new Int8Array(memory.buffer, gridPtr, gridsize * gridsize);
     let ctx = canvas.getContext("2d");
-    //var data = ImageData(S, S, "srgb");
-    //let array = new Uint8ClampedArray(S * S * 4);
-    for (let y = 0; y < S; y++) {
-        for (let x = 0; x < S; x++) {
+    for (let y = 0; y < gridsize; y++) {
+        for (let x = 0; x < gridsize; x++) {
             // Use S to determine how big the ImageData should be
             // if canvas is 512px and we have S = 64 then each "Ising Pixel"
             // Has to be 8x8 in size, so just draw a rectangle of that size
             //console.log(S);
-            var size = 512/S;
-            //var id = new ImageData(size, size);
-            //var data = id.data;
-            let spin = ising.get_Spin_at(x, y);
+            var size = 512/gridsize;
+            let spin = grid[y * gridsize + x];//ising.get_Spin_at(x, y);
             ctx.fillStyle = spin == -1 ? "black" : "white";
             ctx.fillRect(x * size, y * size, size, size);
-            //console.log(spin);
-            //if (spin == -1) {
-            //    data[0] = 0;
-            //    data[1] = 0;
-            //    data[2] = 0;
-            //}
-            //else {
-            //    data[0] = 255;
-            //    data[1] = 255;
-            //    data[2] = 255;
-            //}
-            //data[3] = 255;
-            /*let idx = y * S + x;
-            array[idx] = spin < 0 ? 0 : 255;
-            array[idx + 1] = spin < 0 ? 0 : 255;
-            array[idx + 2] = spin < 0 ? 0 : 255;
-            array[idx + 3] = 255;*/
-            //ctx.putImageData(id, x, y);
         }
     }
-    //let imgData = new ImageData(array, S, S);
-    //ctx.putImageData(imgData, 0, 0);
-    //setTimeout(1000);
+}
+
+function update_temp() {
+    var inputTemp = parseFloat(document.getElementById('temp_input').value);
+    ising.set_T(inputTemp);
+    console.log(inputTemp);
+    document.getElementById('temp_label').innerHTML = inputTemp.toFixed(5);
 }
 
 window.onload = init();
