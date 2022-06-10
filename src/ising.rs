@@ -62,6 +62,8 @@ impl IsingModell {
     // Runs mc_steps steps of the Metropolis algorithm
     pub fn run(&mut self, mc_steps: u32) {
         // Create plot directory only if we intend to plot the grid
+        let S_squared: f32 = (self.S * self.S) as f32;
+        self.M_avg *= (self.mc_step as f32 * S_squared);
         for _i in 0..mc_steps {
 
             // In each MC step we try S*S random flips
@@ -74,10 +76,10 @@ impl IsingModell {
             
             //if (!silent && i%(mc_steps/100)) { println!("Progress {:3.2}%", (i as f32/mc_steps as f32) * 100.0); }
         }
-        self.M_avg = self.M_avg/(mc_steps as f32 * self.S as f32 * self.S as f32);// /= mc_steps as f32;
-        self.U_avg = self.U_avg/(mc_steps as f32 * self.S as f32 * self.S as f32);// /= mc_steps as f32;
-        self.M_avg = self.M_avg.abs();
         self.mc_step += mc_steps;
+        self.M_avg = self.M_avg/(self.mc_step as f32 * S_squared);// /= mc_steps as f32;
+        self.U_avg = self.U_avg/(self.mc_step as f32 * S_squared);// /= mc_steps as f32;
+        //self.M_avg = self.M_avg.abs();
     }
 
     // Plots a single picture of the current spin configuration and saves it as png
@@ -218,6 +220,10 @@ impl IsingModell {
 
     pub fn get_S(&self) -> usize {
         return self.S;
+    }
+
+    pub fn get_steps(&self) -> u64 {
+        return self.mc_step as u64;
     }
 
     pub fn get_Spin_at(&self, x: usize, y: usize) -> i8 {
