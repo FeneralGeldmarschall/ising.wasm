@@ -8,13 +8,48 @@
     <body>
         <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
         <script src="./bootstrap.js"></script>
-        <canvas id="grid" width=512 height=512></canvas>
+        <div>
+            <pre id="mc_steps" class="prelabel">Steps = 0</pre>
+            <pre id="m_avg" class="prelabel">M = 0</pre>
+            <pre id="u_avg" class="prelabel">U = 0</pre>
+            <pre id="xi_avg" class="prelabel">Xi = 0</pre>
+            <!--
+            <label id="mc_steps" class="label"></label>
+            <label id="m_mean" class="label"></label>
+            <label id="u_mean" class="label"></label>
+            <label id="xi_mean" class="label"></label>
+            -->
+        </div>
+        <div id="canvas">
+            <canvas id="grid" width=512 height=512></canvas>
+        </div>
         <div id="inputs">
+            <!-- Temperature -->
             <div>
                 <label id="temp" class="label" for="temp" title="Temperature">Temperature</label>
                 <input class="inputrange" type="range" id="temp_input" min=0 max=10 step=0.00001 value=0></input>
                 <label id="temp_label" class="label" for="temp" title="Temperature"></label>
             </div>
+            <!-- B field -->
+            <div>
+                <label id="temp" class="label" for="bfield" title="Field_strength">Field strength</label>
+                <input class="inputrange" type="range" id="bfield_input" min=-10 max=10 step=0.0001 value=0></input>
+                <label id="bfield_label" class="label" for="temp" title="Field Strength"></label>
+            </div>
+        </div>
+        <div>
+            <select id='gridsize'>
+                <option value="512">512</option>
+                <option value="256" selected="selected">256</option>
+                <option value="128">128</option>
+                <option value="64">64</option>
+                <option value="32">32</option>
+                <option value="16">16</option>
+            </select>
+        </div>
+        <div>
+            <input type="button" id="stop" value="Stop"></input>
+            <input type="button" id="start" value="Start"></input>
         </div>
     </body>
 </html>

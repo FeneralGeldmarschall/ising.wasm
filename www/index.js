@@ -30,18 +30,31 @@ var fps, fpsInterval, startTime, now, then, elapsed;
 
 function init() {
     const temp_input = document.getElementById("temp_input");
+    const b_input = document.getElementById("bfield_input");
     temp_input.addEventListener("change", update_temp);
     temp_input.addEventListener("input", update_temp);
+    b_input.addEventListener("change", update_bfield);
+    b_input.addEventListener("input", update_bfield);
     update_temp();
+    update_bfield();
+
+    const gridsize = document.getElementById("gridsize");
+    gridsize.addEventListener("change", update_grid);
+
+    const start_btn = document.getElementById("start");
+    const stop_btn = document.getElementById("stop");
+    start_btn.addEventListener("click", start_simulation);
+    stop_btn.addEventListener("click", stop_simulation);
+
     start_animation(20);
     //requestAnimationFrame(renderLoop);
 }
 
 function start_animation(fps) {
-    fpsInterval = 1000 / fps;
+    //fpsInterval = 1000 / fps;
     then = window.performance.now();
     startTime = then;
-    //console.log(startTime);
+    console.log(startTime);
     renderLoop();
 }
 
@@ -52,6 +65,7 @@ function renderLoop() {
     then = window.performance.now();
     ising.run(1);
     now = window.performance.now();
+    update_values();
     elapsed = now - then;
     drawGridToCanvas();
     requestAnimationFrame(renderLoop);
@@ -84,6 +98,39 @@ function update_temp() {
     ising.set_T(inputTemp);
     console.log(inputTemp);
     document.getElementById('temp_label').innerHTML = inputTemp.toFixed(5);
+}
+
+function update_bfield() {
+    var inputB = parseFloat(document.getElementById('bfield_input').value);
+    ising.set_B(inputB);
+    console.log(inputB);
+    document.getElementById('bfield_label').innerHTML = inputB.toFixed(5);
+}
+
+function update_values() {
+    var steps = document.getElementById("mc_steps");
+    var m_avg = document.getElementById("m_avg");
+    var u_avg = document.getElementById("u_avg");
+    steps.innerHTML = `Steps = ${ising.get_steps()}`;
+    m_avg.innerHTML = `M = ${Math.abs(ising.get_M_avg().toFixed(2))}`;
+    u_avg.innerHTML = `U = ${ising.get_U_avg().toFixed(2)}`;
+    //var xi_mean
+}
+
+function update_grid() {
+    var newB = ising.get_B();
+    var newT = ising.get_T();
+    var newS = parseInt(document.getElementById('gridsize').value);
+    ising = IsingModell.new(newS, newB, newT, 1, Up, Seed);
+}
+
+function start_simulation() {
+    stop = false;
+    start_animation(20);
+}
+
+function stop_simulation() {
+    stop = true;
 }
 
 window.onload = init();
