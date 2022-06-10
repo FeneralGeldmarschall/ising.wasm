@@ -1,0 +1,11 @@
+version: '3.9'
+
+services:
+  web:
+    container_name: ising-webcanvas
+    #image: justus557/ising-web
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - '8080:8080'
