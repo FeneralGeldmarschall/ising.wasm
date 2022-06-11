@@ -65,7 +65,9 @@ impl IsingModell {
         // Create plot directory only if we intend to plot the grid
         self.changed.clear();
         let S_squared: f32 = (self.S * self.S) as f32;
+        let U_max: f32 = self.B + self.I * 2.0;
         self.M_avg *= (self.mc_step as f32 * S_squared);
+        self.U_avg *= (self.mc_step as f32 * S_squared);
         for _i in 0..mc_steps {
 
             // In each MC step we try S*S random flips
@@ -74,7 +76,7 @@ impl IsingModell {
             }           
             
             self.M_avg += self.M;//S_squared;
-            self.U_avg += self.U;//S_squared;
+            self.U_avg += self.U/U_max;//S_squared;
             
             //if (!silent && i%(mc_steps/100)) { println!("Progress {:3.2}%", (i as f32/mc_steps as f32) * 100.0); }
         }
@@ -212,8 +214,16 @@ impl IsingModell {
         return self.changed.as_ptr();
     }
 
+    pub fn get_M(&self) -> f64 {
+        return self.M as f64;
+    }
+
     pub fn get_M_avg(&self) -> f64 {
         return self.M_avg as f64;
+    }
+
+    pub fn get_U(&self) -> f64 {
+        return self.U as f64;
     }
 
     pub fn get_U_avg(&self) -> f64 {

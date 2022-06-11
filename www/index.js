@@ -47,12 +47,30 @@ function init() {
     stop_btn.addEventListener("click", stop_simulation);
 
     drawGrid();
+
+    var steps = document.getElementById("mc_steps");
+    var m_avg = document.getElementById("m_avg");
+    var u_avg = document.getElementById("u_avg");
+    steps.innerHTML = `Steps = ${ising.get_steps()}`;
+    m_avg.innerHTML = `M = ${Math.abs(ising.get_M_avg().toFixed(2))}`;
+    u_avg.innerHTML = `U = ${parseFloat(ising.get_U_avg()).toFixed(2)}`;
     
-    start_animation(20);
+    
+    startAnimation();
     //requestAnimationFrame(renderLoop);
 }
 
-function start_animation(fps) {
+function reset() {
+    drawGrid();
+    var steps = document.getElementById("mc_steps");
+    var m_avg = document.getElementById("m_avg");
+    var u_avg = document.getElementById("u_avg");
+    steps.innerHTML = "Steps = 0";
+    m_avg.innerHTML = `M_avg = 0\tM = ${parseFloat(ising.get_M()).toFixed(2)}`;
+    u_avg.innerHTML = `U_avg = 0\tU = ${parseFloat(ising.get_U()).toFixed(2)}`;
+}
+
+function startAnimation() {
     //fpsInterval = 1000 / fps;
     then = window.performance.now();
     startTime = then;
@@ -141,9 +159,11 @@ function update_values() {
     var steps = document.getElementById("mc_steps");
     var m_avg = document.getElementById("m_avg");
     var u_avg = document.getElementById("u_avg");
+    console.log(ising.get_U_avg());
+    console.log(ising.get_M_avg());
     steps.innerHTML = `Steps = ${ising.get_steps()}`;
-    m_avg.innerHTML = `M = ${Math.abs(ising.get_M_avg().toFixed(2))}`;
-    u_avg.innerHTML = `U = ${ising.get_U_avg().toFixed(2)}`;
+    m_avg.innerHTML = `M_avg = ${Math.abs(ising.get_M_avg().toFixed(2))}\tM = ${parseFloat(ising.get_M()).toFixed(2)}`;
+    u_avg.innerHTML = `U_avg = ${parseFloat(ising.get_U_avg()).toFixed(2)}\tU = ${parseFloat(ising.get_U()).toFixed(2)}`;
     //var xi_mean
 }
 
@@ -157,7 +177,8 @@ function update_grid() {
 
 function start_simulation() {
     stop = false;
-    init();
+    reset();
+    startAnimation();
 }
 
 function stop_simulation() {
