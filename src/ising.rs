@@ -18,7 +18,8 @@ pub struct IsingModell {
     M: f32, // Magnetization in absolute units
     M_avg: f32,
     mc_step: u32,
-    rng: StdRng
+    rng: StdRng,
+    changed: Vec<u32>
 }
 
 #[wasm_bindgen]
@@ -51,17 +52,18 @@ impl IsingModell {
             }
         }
 
-        
+        let mut ch: Vec<u32> = Vec::new();
         return IsingModell { S: size, grid: (vector), M: (m), M_avg: (0.0), B: (b), U: (- b * b_energy - 0.5 * i * i_energy), 
-                             U_avg: (0.0), T: (t), I: (i) , mc_step: (0), rng: (rng)};
+                             U_avg: (0.0), T: (t), I: (i) , mc_step: (0), rng: (rng), changed: (ch) };
     }
 
     // Runs mc_steps of the Metropolis algorithm
     //pub fn run_
 
     // Runs mc_steps steps of the Metropolis algorithm
-    pub fn run(&mut self, mc_steps: u32) {
+    pub fn run(&mut self, mc_steps: u32) -> u32 {
         // Create plot directory only if we intend to plot the grid
+        self.changed.clear();
         let S_squared: f32 = (self.S * self.S) as f32;
         self.M_avg *= (self.mc_step as f32 * S_squared);
         for _i in 0..mc_steps {
@@ -79,6 +81,8 @@ impl IsingModell {
         self.mc_step += mc_steps;
         self.M_avg = self.M_avg/(self.mc_step as f32 * S_squared);// /= mc_steps as f32;
         self.U_avg = self.U_avg/(self.mc_step as f32 * S_squared);// /= mc_steps as f32;
+        
+        return self.changed.len() as u32;
         //self.M_avg = self.M_avg.abs();
     }
 
@@ -152,6 +156,8 @@ impl IsingModell {
 
     // Flips spin at x, y and updates M
     fn flip_spin(&mut self, x: usize, y: usize) {
+        self.changed.push(x as u32);
+        self.changed.push(y as u32);
         self.set_spin(x, y, self.grid[self.get_idx(x, y)] * -1i8);
         self.M += (2 * self.grid[self.get_idx(x, y)]) as f32;
     }
@@ -200,6 +206,10 @@ impl IsingModell {
 
     pub fn grid_ptr(&self) -> *const i8 {
         return self.grid.as_ptr();
+    }
+
+    pub fn changed_ptr(&self) -> *const u32 {
+        return self.changed.as_ptr();
     }
 
     pub fn get_M_avg(&self) -> f64 {
