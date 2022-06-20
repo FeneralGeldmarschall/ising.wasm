@@ -1,5 +1,6 @@
 import { IsingModell } from "ising-webcanvas";
 import { memory } from "ising-webcanvas/ising_webcanvas_bg";
+//import "./style.css"
 
 
 var S = 128;
@@ -42,9 +43,13 @@ function init() {
     grid_change.addEventListener("change", update_grid);
 
     const start_btn = document.getElementById("start");
+    const step_btn = document.getElementById("step");
     const stop_btn = document.getElementById("stop");
+    const reset_btn = document.getElementById("reset_data");
     start_btn.addEventListener("click", start_simulation);
+    step_btn.addEventListener("click", step_simulation);
     stop_btn.addEventListener("click", stop_simulation);
+    reset_btn.addEventListener("click", reset_data);
 
     drawGrid();
 
@@ -74,7 +79,7 @@ function startAnimation() {
     //fpsInterval = 1000 / fps;
     then = window.performance.now();
     startTime = then;
-    console.log(startTime);
+    //console.log(startTime);
     renderLoop();
 }
 
@@ -144,14 +149,14 @@ function drawGridToCanvas(changed_len) {
 function update_temp() {
     var inputTemp = parseFloat(document.getElementById('temp_input').value);
     ising.set_T(inputTemp);
-    console.log(inputTemp);
+    //console.log(inputTemp);
     document.getElementById('temp_label').innerHTML = inputTemp.toFixed(5);
 }
 
 function update_bfield() {
     var inputB = parseFloat(document.getElementById('bfield_input').value);
     ising.set_B(inputB);
-    console.log(inputB);
+    //console.log(inputB);
     document.getElementById('bfield_label').innerHTML = inputB.toFixed(5);
 }
 
@@ -159,8 +164,8 @@ function update_values() {
     var steps = document.getElementById("mc_steps");
     var m_avg = document.getElementById("m_avg");
     var u_avg = document.getElementById("u_avg");
-    console.log(ising.get_U_avg());
-    console.log(ising.get_M_avg());
+    //console.log(ising.get_U_avg());
+    //console.log(ising.get_M_avg());
     steps.innerHTML = `Steps = ${ising.get_steps()}`;
     m_avg.innerHTML = `M_avg = ${Math.abs(ising.get_M_avg().toFixed(2))}\tM = ${parseFloat(ising.get_M()).toFixed(2)}`;
     u_avg.innerHTML = `U_avg = ${parseFloat(ising.get_U_avg()).toFixed(2)}\tU = ${parseFloat(ising.get_U()).toFixed(2)}`;
@@ -181,8 +186,25 @@ function start_simulation() {
     startAnimation();
 }
 
+function step_simulation() {
+    ising.run(1);
+    update_values();
+    drawGrid();
+}
+
 function stop_simulation() {
     stop = true;
+}
+
+function reset_data() {
+    var steps = document.getElementById("mc_steps");
+    var m_avg = document.getElementById("m_avg");
+    var u_avg = document.getElementById("u_avg");
+
+    ising.reset_data();
+    steps.innerHTML = `Steps = ${0}`;
+    m_avg.innerHTML = `M_avg = ${0.00}\tM = 0}`;
+    u_avg.innerHTML = `U_avg = ${0.00}\tU = 0.00}`;
 }
 
 window.onload = init();

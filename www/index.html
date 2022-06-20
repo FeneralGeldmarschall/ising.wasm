@@ -1,55 +1,69 @@
 <!DOCTYPE html>
 <html>
     <head>
-    <meta charset="utf-8">
-    <title>Ising</title>
-    <link rel="stylesheet" href="./style.css">
+        <meta charset="utf-8">
+        <title>Ising</title>
+        <link type="text/css" rel="stylesheet" href="style.css">
     </head>
     <body>
         <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
         <script src="./bootstrap.js"></script>
-        <div>
-            <pre id="mc_steps" class="prelabel">Steps = 0</pre>
-            <pre id="m_avg" class="prelabel">M = 0</pre>
-            <pre id="u_avg" class="prelabel">U = 0</pre>
-            <pre id="xi_avg" class="prelabel">Xi = 0</pre>
-            <!--
-            <label id="mc_steps" class="label"></label>
-            <label id="m_mean" class="label"></label>
-            <label id="u_mean" class="label"></label>
-            <label id="xi_mean" class="label"></label>
-            -->
-        </div>
-        <div id="canvas">
-            <canvas id="grid" width=512 height=512></canvas>
-        </div>
-        <div id="inputs">
-            <!-- Temperature -->
-            <div>
-                <label id="temp" class="label" for="temp" title="Temperature">Temperature</label>
-                <input class="inputrange" type="range" id="temp_input" min=0 max=10 step=0.00001 value=0></input>
-                <label id="temp_label" class="label" for="temp" title="Temperature"></label>
+        <div id="container">
+            
+            <div id="canvas">
+                <canvas id="grid" width=512 height=512></canvas>
             </div>
-            <!-- B field -->
-            <div>
-                <label id="temp" class="label" for="bfield" title="Field_strength">Field strength</label>
-                <input class="inputrange" type="range" id="bfield_input" min=-10 max=10 step=0.0001 value=0></input>
-                <label id="bfield_label" class="label" for="temp" title="Field Strength"></label>
+            <div id="settings">
+                <div id="values">
+                    <pre id="mc_steps" class="prelabel">Steps = 0</pre>
+                    <pre id="m_avg" class="prelabel">M = 0</pre>
+                    <pre id="u_avg" class="prelabel">U = 0</pre>
+                    <pre id="xi_avg" class="prelabel">Xi = 0</pre>
+                    <!--
+                    <label id="mc_steps" class="label"></label>
+                    <label id="m_mean" class="label"></label>
+                    <label id="u_mean" class="label"></label>
+                    <label id="xi_mean" class="label"></label>
+                    -->
+                </div>
+                <div id="inputs">
+                    <!-- Temperature -->
+                    <div class="subinputs">
+                        <label id="temp" class="label" title="Temperature">Temperature</label>
+                        <input class="inputrange" type="range" id="temp_input" min=0 max=10 step=0.00001 value=0></input>
+                        <label id="temp_label" class="label" title="Temperature"></label>
+                    </div>
+                    <!-- B field -->
+                    <div class="subinputs">
+                        <label id="temp" class="label" title="Field_strength">Field strength</label>
+                        <input class="inputrange" type="range" id="bfield_input" min=-10 max=10 step=0.0001 value=0></input>
+                        <label id="bfield_label" class="label" title="Field Strength"></label>
+                    </div>
+                </div>
+                <div id="misc">
+                    <div id="sizeselection">
+                        <label id="gridlabel" class="label" title="Gridsize">Gridsize</label>
+                        <select id='gridsize'>
+                            <option value="512">512</option>
+                            <option value="256">256</option>
+                            <option value="128" selected="selected">128</option>
+                            <option value="64">64</option>
+                            <option value="32">32</option>
+                            <option value="16">16</option>
+                        </select>
+                    </div>
+                    <div id="buttons">
+                        <center>
+                            <input type="button" class="button" id="start" value="Start"></input>
+                            <input type="button" class="button" id="step" value="Step"></input>
+                            <input type="button" class="button" id="stop" value="Stop"></input>
+                            <br>
+                            <input type="button" class="button" id="download_grid" value="Download Grid"></input>
+                            <input type="button" class="button" id="reset_data" value="Reset Data"></input>
+                        </center>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div>
-            <select id='gridsize'>
-                <option value="512">512</option>
-                <option value="256">256</option>
-                <option value="128" selected="selected">128</option>
-                <option value="64">64</option>
-                <option value="32">32</option>
-                <option value="16">16</option>
-            </select>
-        </div>
-        <div>
-            <input type="button" id="stop" value="Stop"></input>
-            <input type="button" id="start" value="Start"></input>
         </div>
     </body>
 </html>

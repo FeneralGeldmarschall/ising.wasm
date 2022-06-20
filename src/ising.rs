@@ -65,7 +65,7 @@ impl IsingModell {
         // Create plot directory only if we intend to plot the grid
         self.changed.clear();
         let S_squared: f32 = (self.S * self.S) as f32;
-        let U_max: f32 = self.B + self.I * 2.0;
+        let U_max: f32 = self.I * 2.0; // No Bmax here coz average would be fucked when changing B field
         self.M_avg *= (self.mc_step as f32 * S_squared);
         self.U_avg *= (self.mc_step as f32 * S_squared);
         for _i in 0..mc_steps {
@@ -256,6 +256,14 @@ impl IsingModell {
 
     pub fn set_B(&mut self, newB: f64) {
         self.B = newB as f32;
+    }
+
+    pub fn reset_data(&mut self) {
+        self.U = 0.0;
+        self.U_avg = 0.0;
+        self.M = 0.0;
+        self.M_avg = 0.0;
+        self.mc_step = 0;
     }
 }
 }

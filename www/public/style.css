@@ -1,0 +1,96 @@
+#container {
+    height: auto;
+    width: auto;
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+}
+
+#canvas {
+    display: inline-block;
+    align: center;;
+    height: 512px;
+    width: 512px;
+    padding: 5px;
+    border: 3px;
+    border-color: black;
+    border-style: solid;
+}
+
+#settings {
+    display: inline-block;
+    width: 400px;
+    height: 512px;
+    padding: 5px;
+    vertical-align: top;
+    border: 3px;
+    border-color: black;
+    border-style: solid;
+}
+
+#values {
+    width: auto;
+    height: auto;
+    font-size: 18px;
+}
+
+.prelabel {
+    width: auto;
+}
+
+#inputs {
+    width: 500px;
+    height: auto;
+    padding: 5px;
+}
+
+.subinputs {
+    height: auto;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.inputrange {
+    position: center;
+    vertical-align: middle;
+    width: 150px;
+}
+
+.label {
+    position: relative;
+    display: inline-block;
+    padding-right: 6px;
+    text-align: right;
+    vertical-align: middle;
+    width: 150px;
+    height: 20px;
+    font-size: 18px;
+}
+
+#temp_label {
+    text-align: left;
+    padding-left: 6px;
+}
+
+#bfield_label {
+    text-align: left;
+    padding-left: 6px;
+}
+
+#misc {
+    padding: 5px;
+}
+
+#sizeselection {
+    padding: 5px;
+}
+
+#gridsize {
+    padding: 0px;
+}
+
+#buttons {
+    padding: 5px;
+    width: auto;
+    height: auto;
+}
