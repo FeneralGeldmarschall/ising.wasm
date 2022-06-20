@@ -1,7 +1,7 @@
 mod ising {
 
 use rand::{Rng, SeedableRng};
-use rand::rngs::StdRng;
+use rand::rngs::SmallRng;
 use plotters::prelude::*;
 use wasm_bindgen::prelude::*;
 
@@ -18,7 +18,7 @@ pub struct IsingModell {
     M: f32, // Magnetization in absolute units
     M_avg: f32,
     mc_step: u32,
-    rng: StdRng,
+    rng: SmallRng,
     changed: Vec<u32>
 }
 
@@ -26,7 +26,7 @@ pub struct IsingModell {
 impl IsingModell {
     pub fn new(size: usize, b: f32, t: f32, i: f32, up: f64, seed: u64) -> IsingModell {
         //let mut model = IsingModell { N: size, grid: vec![vec![0i8; size]; size], M: (0.0), B: (b), U: (0.0), T: (t), I: (i) , rng: (StdRng::seed_from_u64(seed))};
-        let mut rng = StdRng::seed_from_u64(seed);
+        let mut rng = SmallRng::seed_from_u64(seed);
         let mut vector: Vec<i8> = Vec::with_capacity(size * size);
         let mut m = 0.0;
         for _y in 0..size {
