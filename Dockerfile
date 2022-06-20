@@ -28,8 +28,9 @@ COPY . /home/root/ising-webcanvas
 #WORKDIR /home/root
 #RUN git clone https://gitlab.com/Justus557/ising-webcanvas.git
 WORKDIR /home/root/ising-webcanvas
-RUN wasm-pack build
+RUN wasm-pack build --release
 WORKDIR /home/root/ising-webcanvas/www/
 RUN npm install
+RUN npm run build
 
 CMD [ "npm", "run", "start" ]
