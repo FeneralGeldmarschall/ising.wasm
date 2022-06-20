@@ -202,9 +202,9 @@ function reset_data() {
     var u_avg = document.getElementById("u_avg");
 
     ising.reset_data();
-    steps.innerHTML = `Steps = ${0}`;
-    m_avg.innerHTML = `M_avg = ${0.00}\tM = 0}`;
-    u_avg.innerHTML = `U_avg = ${0.00}\tU = 0.00}`;
+    steps.innerHTML = `Steps = 0`;
+    m_avg.innerHTML = `M_avg = 0.00\tM = 0.00`;
+    u_avg.innerHTML = `U_avg = 0.00\tU = 0.00`;
 }
 
 window.onload = init();
