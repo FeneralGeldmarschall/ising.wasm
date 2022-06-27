@@ -13,6 +13,7 @@ var ising = IsingModell.new(S, B, T, I, Up, Seed);
 const canvas = document.getElementById("grid");
 
 var stop = false;
+var reset_on_t_change = false;
 var frameCount = 0;
 var fps, fpsInterval, startTime, now, then, elapsed;
 
@@ -30,14 +31,20 @@ var fps, fpsInterval, startTime, now, then, elapsed;
 }*/
 
 function init() {
+    // Setting all Event listeners up
     const temp_input = document.getElementById("temp_input");
     const b_input = document.getElementById("bfield_input");
-    temp_input.addEventListener("change", update_temp);
-    temp_input.addEventListener("input", update_temp);
-    b_input.addEventListener("change", update_bfield);
-    b_input.addEventListener("input", update_bfield);
-    update_temp();
-    update_bfield();
+    temp_input.addEventListener("change", function() { update_temp("temp_input"); });
+    temp_input.addEventListener("input", function() { update_temp("temp_input"); });
+    b_input.addEventListener("change", function() { update_bfield("bfield_input"); });
+    b_input.addEventListener("input", function() { update_bfield("bfield_input"); });
+
+    const temp_input_label = document.getElementById("temp_input_label");
+    const bfield_input_label = document.getElementById("bfield_input_label");
+    temp_input_label.addEventListener("keyup", function(event) { update_temp("temp_input_label", event); });
+    bfield_input_label.addEventListener("keyup", function(event) { update_bfield("bfield_input_label", event); });
+    update_temp("temp_input");
+    update_bfield("bfield_input");
 
     const grid_change = document.getElementById("gridsize");
     grid_change.addEventListener("change", update_grid);
@@ -51,14 +58,18 @@ function init() {
     stop_btn.addEventListener("click", stop_simulation);
     reset_btn.addEventListener("click", reset_data);
 
+    const t_change = document.getElementById("t_change_reset");
+    t_change.addEventListener("change", t_change_reset);
+
     drawGrid();
 
-    var steps = document.getElementById("mc_steps");
-    var m_avg = document.getElementById("m_avg");
-    var u_avg = document.getElementById("u_avg");
-    steps.innerHTML = `Steps = ${ising.get_steps()}`;
-    m_avg.innerHTML = `M = ${Math.abs(ising.get_M_avg().toFixed(2))}`;
-    u_avg.innerHTML = `U = ${parseFloat(ising.get_U_avg()).toFixed(2)}`;
+    update_values();
+    //var steps = document.getElementById("mc_steps");
+    //var m_avg = document.getElementById("m_avg");
+    //var u_avg = document.getElementById("u_avg");
+    //steps.innerHTML = `Steps = ${ising.get_steps()}`;
+    //m_avg.innerHTML = `M = ${Math.abs(ising.get_M_avg().toFixed(2))}`;
+    //u_avg.innerHTML = `U = ${parseFloat(ising.get_U_avg()).toFixed(2)}`;
     
     
     startAnimation();
@@ -146,19 +157,43 @@ function drawGridToCanvas(changed_len) {
     }*/
 }
 
-function update_temp() {
-    var inputTemp = parseFloat(document.getElementById('temp_input').value);
+function update_temp(id, event) {
+    if (id == "temp_input") {
+        var inputTemp = parseFloat(document.getElementById('temp_input').value); 
+    }
+    else if (id == "temp_input_label") {
+        if (event.key != "Enter") { return };
+        var inputTemp = parseFloat(document.getElementById('temp_input_label').value);
+    }
+    if (inputTemp > document.getElementById('temp_input').max) { 
+        document.getElementById('temp_input_label').value = parseFloat(document.getElementById('temp_input').value).toFixed(5);
+        return; 
+    }
     ising.set_T(inputTemp);
+    if (reset_on_t_change) {
+        ising.reset_avgs();
+    }
     //console.log(inputTemp);
-    document.getElementById('temp_label').innerHTML = inputTemp.toFixed(5);
+    document.getElementById('temp_input_label').value = inputTemp.toFixed(5);
+    document.getElementById('temp_input').value = inputTemp.toFixed(5);
 }
 
-function update_bfield() {
-    var inputB = parseFloat(document.getElementById('bfield_input').value);
+function update_bfield(id, event) {
+    if (id == "bfield_input") {
+        var inputB = parseFloat(document.getElementById('bfield_input').value); 
+    }
+    else if (id == "bfield_input_label") {
+        if (event.key != "Enter") { return };
+        var inputB = parseFloat(document.getElementById('bfield_input_label').value);
+    }
+    if (inputB > document.getElementById('bfield_input').max) { 
+        document.getElementById('bfield_input_label').value = parseFloat(document.getElementById('bfield_input').value).toFixed(5);
+        return; 
+    }
     ising.set_B(inputB);
-    //console.log(inputB);
-    document.getElementById('bfield_label').innerHTML = inputB.toFixed(5);
-}
+    //console.log(inputTemp);
+    document.getElementById('bfield_input_label').value = inputB.toFixed(5);
+    document.getElementById('bfield_input').value = inputB.toFixed(5);}
 
 function update_values() {
     var steps = document.getElementById("mc_steps");
@@ -197,14 +232,23 @@ function stop_simulation() {
 }
 
 function reset_data() {
-    var steps = document.getElementById("mc_steps");
-    var m_avg = document.getElementById("m_avg");
-    var u_avg = document.getElementById("u_avg");
-
     ising.reset_data();
-    steps.innerHTML = `Steps = 0`;
-    m_avg.innerHTML = `M_avg = 0.00\tM = 0.00`;
-    u_avg.innerHTML = `U_avg = 0.00\tU = 0.00`;
+    reset();
+    //steps.innerHTML = `Steps = 0`;
+    //m_avg.innerHTML = `M_avg = 0.00\tM = 0.00`;
+    //u_avg.innerHTML = `U_avg = 0.00\tU = 0.00`;
+}
+
+function t_change_reset() {
+    console.log("Test");
+    const checkbox = document.querySelector("#t_change_reset");
+    console.log(checkbox.checked);
+    if (checkbox.checked) {
+        reset_on_t_change = true;
+    }
+    else {
+        reset_on_t_change = false;
+    }
 }
 
 window.onload = init();

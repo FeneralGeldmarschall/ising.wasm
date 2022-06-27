@@ -1,8 +1,10 @@
 mod ising {
 
+#![allow(unused_parens)]
+#![allow(non_snake_case)]
+
 use rand::{Rng, SeedableRng};
 use rand::rngs::SmallRng;
-use plotters::prelude::*;
 use wasm_bindgen::prelude::*;
 
 
@@ -52,9 +54,9 @@ impl IsingModell {
             }
         }
 
-        let mut ch: Vec<u32> = Vec::new();
+        let ch: Vec<u32> = Vec::new();
         return IsingModell { S: size, grid: (vector), M: (m), M_avg: (0.0), B: (b), U: (- b * b_energy - 0.5 * i * i_energy), 
-                             U_avg: (0.0), T: (t), I: (i) , mc_step: (0), rng: (rng), changed: (ch) };
+                             U_avg: (0.0), T: (t), I: (i) , mc_step: (0), rng: (rng), changed: (ch)};
     }
 
     // Runs mc_steps of the Metropolis algorithm
@@ -68,6 +70,7 @@ impl IsingModell {
         let U_max: f32 = self.I * 2.0; // No Bmax here coz average would be fucked when changing B field
         self.M_avg *= (self.mc_step as f32 * S_squared);
         self.U_avg *= (self.mc_step as f32 * S_squared);
+
         for _i in 0..mc_steps {
 
             // In each MC step we try S*S random flips
@@ -83,7 +86,7 @@ impl IsingModell {
         self.mc_step += mc_steps;
         self.M_avg = self.M_avg/(self.mc_step as f32 * S_squared);// /= mc_steps as f32;
         self.U_avg = self.U_avg/(self.mc_step as f32 * S_squared);// /= mc_steps as f32;
-        
+
         return self.changed.len() as u32;
         //self.M_avg = self.M_avg.abs();
     }
@@ -171,22 +174,22 @@ impl IsingModell {
     }
 
     // Calculates the Energy of the current configuration
-    //fn calc_U(&self) -> f32{
-    //    let mut b_energy = 0.0;
-    //    let mut i_energy = 0.0;
-    //    for x in 0..self.S {
-    //        for y in 0..self.S {
-    //            b_energy += self.grid[x][y] as f32;
-    //            let xp = (x + 1) % self.S;
-    //            let yp = (y + 1) % self.S;
-    //            let xm = (x + self.S - 1) % self.S;
-    //            let ym = (y + self.S - 1) % self.S;
-    //            i_energy += (self.grid[x][y] * (self.grid[xp][y] + self.grid[xm][y] + self.grid[x][yp] + self.grid[x][ym])) as f32; 
-    //        }
-    //    }
+    fn calc_U(&self) -> f32{
+        let mut b_energy = 0.0;
+        let mut i_energy = 0.0;
+        for x in 0..self.S {
+            for y in 0..self.S {
+                b_energy += self.grid[self.get_idx(x, y)] as f32;
+                let xp = (x + 1) % self.S;
+                let yp = (y + 1) % self.S;
+                let xm = (x + self.S - 1) % self.S;
+                let ym = (y + self.S - 1) % self.S;
+                i_energy += (self.grid[self.get_idx(x, y)] * (self.grid[self.get_idx(xp, y)] + self.grid[self.get_idx(xm, y)] + self.grid[self.get_idx(x, yp)] + self.grid[self.get_idx(x, ym)])) as f32; 
+            }
+        }
 
-    //    return - self.B * b_energy - 0.5 * self.I * i_energy;
-    //}
+        return - self.B * b_energy - 0.5 * self.I * i_energy;
+    }
 
     // Calculates the Energy you would need to flip the Spin at [x][y]
     fn calc_dU(&self, x: usize, y: usize) -> f32 {
@@ -256,12 +259,16 @@ impl IsingModell {
 
     pub fn set_B(&mut self, newB: f64) {
         self.B = newB as f32;
+        self.U = self.calc_U();
     }
 
     pub fn reset_data(&mut self) {
-        self.U = 0.0;
+        self.U = self.calc_U();
+        self.reset_avgs();
+    }
+
+    pub fn reset_avgs(&mut self) {
         self.U_avg = 0.0;
-        self.M = 0.0;
         self.M_avg = 0.0;
         self.mc_step = 0;
     }
