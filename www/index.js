@@ -2,7 +2,7 @@ import { IsingModell } from "ising-webcanvas";
 import { memory } from "ising-webcanvas/ising_webcanvas_bg";
 //import "./style.css"
 
-
+var canvasSize;
 var S = 128;
 var B = 0.0;
 var I = 1.0;
@@ -13,7 +13,7 @@ var ising = IsingModell.new(S, B, T, I, Up, Seed);
 const canvas = document.getElementById("grid");
 
 var stop = false;
-var reset_on_t_change = false;
+var reset_on_t_change = true;
 var frameCount = 0;
 var fps, fpsInterval, startTime, now, then, elapsed;
 
@@ -32,6 +32,8 @@ var fps, fpsInterval, startTime, now, then, elapsed;
 
 function init() {
     // Setting all Event listeners up
+    canvasSize = document.getElementById('grid').width;
+
     const temp_input = document.getElementById("temp_input");
     const b_input = document.getElementById("bfield_input");
     temp_input.addEventListener("change", function() { update_temp("temp_input"); });
@@ -112,7 +114,8 @@ function drawGrid() {
     const gridPtr = ising.grid_ptr();
     const grid = new Int8Array(memory.buffer, gridPtr, gridsize * gridsize);
     let ctx = canvas.getContext("2d");
-    var size = 512/gridsize;
+    var size = canvasSize/gridsize;
+    console.log(canvasSize);
     for (let y = 0; y < gridsize; y++) {
         for (let x = 0; x < gridsize; x++) {
             // Use S to determine how big the ImageData should be
@@ -136,7 +139,7 @@ function drawGridToCanvas(changed_len) {
     const changedPtr = ising.changed_ptr();
     const changed = new Uint32Array(memory.buffer, changedPtr, changed_len);
     let ctx = canvas.getContext("2d");
-    var size = 512/gridsize;
+    var size = canvasSize/gridsize;
     for (let i = 0; i < changed_len; i += 2) {
         let idx = changed[i + 1] * gridsize + changed[i];
         let spin = grid[idx];
@@ -165,16 +168,19 @@ function update_temp(id, event) {
         if (event.key != "Enter") { return };
         var inputTemp = parseFloat(document.getElementById('temp_input_label').value);
     }
-    if (inputTemp > document.getElementById('temp_input').max) { 
-        document.getElementById('temp_input_label').value = parseFloat(document.getElementById('temp_input').value).toFixed(5);
+    if (inputTemp > Math.pow(10, document.getElementById('temp_input').max)) { 
+        document.getElementById('temp_input_label').value = parseFloat(Math.pow(10, document.getElementById('temp_input').value)).toFixed(5);
         return; 
     }
-    ising.set_T(inputTemp);
+
+    var min = document.getElementById('temp_input').min;
+    var val= inputTemp <= min ? 0 : Math.pow(10, inputTemp);
+    ising.set_T(val);
     if (reset_on_t_change) {
         ising.reset_avgs();
     }
     //console.log(inputTemp);
-    document.getElementById('temp_input_label').value = inputTemp.toFixed(5);
+    document.getElementById('temp_input_label').value = val.toFixed(5);
     document.getElementById('temp_input').value = inputTemp.toFixed(5);
 }
 
