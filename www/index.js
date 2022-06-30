@@ -142,8 +142,13 @@ function drawGridToCanvas(changed_len) {
 }
 
 function update_temp(id, event) {
+    var val;
+    var exp;
     if (id == "temp_input") {
-        var inputTemp = parseFloat(document.getElementById('temp_input').value); 
+        var inputTemp = parseFloat(document.getElementById('temp_input').value);
+        var min = document.getElementById('temp_input').min;
+        val = inputTemp <= min ? 0 : Math.pow(10, inputTemp);
+        exp = inputTemp;
     }
     else if (id == "temp_input_label") {
         if (event.key != "Enter") return;
@@ -152,6 +157,8 @@ function update_temp(id, event) {
             document.getElementById('temp_input_label').value = (0).toFixed(5);
             return;
         }
+        exp = Math.log(inputTemp) / Math.log(10);
+        val = inputTemp;
     }
     if (inputTemp > Math.pow(10, document.getElementById('temp_input').max)) { 
         document.getElementById('temp_input_label').value = parseFloat(Math.pow(10, document.getElementById('temp_input').max)).toFixed(5);
@@ -159,15 +166,13 @@ function update_temp(id, event) {
     }
     //console.log(inputTemp)
 
-    var min = document.getElementById('temp_input').min;
-    var val= inputTemp <= min ? 0 : Math.pow(10, inputTemp);
-    ising.set_T(val);
+        ising.set_T(val);
     if (reset_on_t_change) {
         ising.reset_avgs();
     }
     //console.log(inputTemp);
     document.getElementById('temp_input_label').value = val.toFixed(5);
-    document.getElementById('temp_input').value = inputTemp.toFixed(5);
+    document.getElementById('temp_input').value = exp.toFixed(5);
 }
 
 function update_bfield(id, event) {
