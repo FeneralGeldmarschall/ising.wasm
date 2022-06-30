@@ -6,8 +6,6 @@ A 2D Ising Simulation written in Rust and rendered in JS. Combined through the p
 <br>
 Rendering part is heavily inspired by mattbierbaum's <a href="https://github.com/mattbierbaum/ising.js">ising.js</a>
 
-CLI Version with Plotting Functionality available <a href="https://gitlab.com/Justus557/cp-ising">here</a>
-
 ## Usage
 
 ### Build with `wasm-pack build`
