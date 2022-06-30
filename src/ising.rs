@@ -84,8 +84,8 @@ impl IsingModell {
             //if (!silent && i%(mc_steps/100)) { println!("Progress {:3.2}%", (i as f32/mc_steps as f32) * 100.0); }
         }
         self.mc_step += mc_steps;
-        self.M_avg = self.M_avg/(self.mc_step as f32 * S_squared);// /= mc_steps as f32;
-        self.U_avg = self.U_avg/(self.mc_step as f32 * S_squared);// /= mc_steps as f32;
+        self.M_avg /= (self.mc_step as f32 * S_squared);// /= mc_steps as f32;
+        self.U_avg /= (self.mc_step as f32 * S_squared);// /= mc_steps as f32;
 
         return self.changed.len() as u32;
         //self.M_avg = self.M_avg.abs();
@@ -271,6 +271,24 @@ impl IsingModell {
         self.U_avg = 0.0;
         self.M_avg = 0.0;
         self.mc_step = 0;
+    }
+
+    pub fn magnetize(&mut self) {
+        let spin = if self.M >= 0.0 { 1 } else { -1 };
+        for i in 0..self.grid.len() {
+            self.grid[i] = spin;
+        }
+        self.M = self.grid.iter().map(|&i| i as f32).sum();
+        self.U = self.calc_U();
+        self.mc_step += 1;
+        /*self.M_avg *= (self.S as f32 * self.S as f32 * self.mc_step as f32);
+        self.U_avg *= (self.S as f32 * self.S as f32 * self.mc_step as f32);
+        self.M_avg += self.M;
+        self.U_avg += self.U/self.I * 2.0;
+        self.M_avg /= (self.S as f32 * self.S as f32 + (self.mc_step + 1) as f32); 
+        self.U_avg /= (self.S as f32 * self.S as f32 + (self.mc_step + 1) as f32);*/
+        //self.M_avg += self.M/(self.S as f32 * self.S as f32 * self.mc_step as f32);
+        //self.U_avg += self.U/(self.I * 2.0 * self.S as f32 * self.S as f32 * self.mc_step as f32);
     }
 }
 }

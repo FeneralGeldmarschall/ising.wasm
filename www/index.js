@@ -12,7 +12,7 @@ var Seed = BigInt(123456789);
 var ising = IsingModell.new(S, B, T, I, Up, Seed);
 const canvas = document.getElementById("grid");
 
-var stop = false;
+var stop = true;
 var reset_on_t_change = true;
 var frameCount = 0;
 var fps, fpsInterval, startTime, now, then, elapsed;
@@ -51,14 +51,16 @@ function init() {
     const grid_change = document.getElementById("gridsize");
     grid_change.addEventListener("change", update_grid);
 
-    const start_btn = document.getElementById("start");
+    const start_btn = document.getElementById("start_stop");
     const step_btn = document.getElementById("step");
-    const stop_btn = document.getElementById("stop");
     const reset_btn = document.getElementById("reset_data");
-    start_btn.addEventListener("click", start_simulation);
+    const magnetize = document.getElementById("magnetize");
+    const reset_grid = document.getElementById("reset_grid");
+    start_btn.addEventListener("click", start_stop);
     step_btn.addEventListener("click", step_simulation);
-    stop_btn.addEventListener("click", stop_simulation);
     reset_btn.addEventListener("click", reset_data);
+    magnetize.addEventListener("click", magnetize_grid);
+    reset_grid.addEventListener("click", reset_model);
 
     const t_change = document.getElementById("t_change_reset");
     t_change.addEventListener("change", t_change_reset);
@@ -66,16 +68,8 @@ function init() {
     drawGrid();
 
     update_values();
-    //var steps = document.getElementById("mc_steps");
-    //var m_avg = document.getElementById("m_avg");
-    //var u_avg = document.getElementById("u_avg");
-    //steps.innerHTML = `Steps = ${ising.get_steps()}`;
-    //m_avg.innerHTML = `M = ${Math.abs(ising.get_M_avg().toFixed(2))}`;
-    //u_avg.innerHTML = `U = ${parseFloat(ising.get_U_avg()).toFixed(2)}`;
-    
     
     startAnimation();
-    //requestAnimationFrame(renderLoop);
 }
 
 function reset() {
@@ -115,7 +109,6 @@ function drawGrid() {
     const grid = new Int8Array(memory.buffer, gridPtr, gridsize * gridsize);
     let ctx = canvas.getContext("2d");
     var size = canvasSize/gridsize;
-    console.log(canvasSize);
     for (let y = 0; y < gridsize; y++) {
         for (let x = 0; x < gridsize; x++) {
             // Use S to determine how big the ImageData should be
@@ -146,18 +139,6 @@ function drawGridToCanvas(changed_len) {
         ctx.fillStyle = spin == -1 ? "black" : "white";
         ctx.fillRect(changed[i] * size, changed[i + 1] * size, size, size);
     }
-    /*for (let y = 0; y < gridsize; y++) {
-        for (let x = 0; x < gridsize; x++) {
-            // Use S to determine how big the ImageData should be
-            // if canvas is 512px and we have S = 64 then each "Ising Pixel"
-            // Has to be 8x8 in size, so just draw a rectangle of that size
-            //console.log(S);
-            var size = 512/gridsize;
-            let spin = grid[y * gridsize + x];//ising.get_Spin_at(x, y);
-            ctx.fillStyle = spin == -1 ? "black" : "white";
-            ctx.fillRect(x * size, y * size, size, size);
-        }
-    }*/
 }
 
 function update_temp(id, event) {
@@ -165,13 +146,18 @@ function update_temp(id, event) {
         var inputTemp = parseFloat(document.getElementById('temp_input').value); 
     }
     else if (id == "temp_input_label") {
-        if (event.key != "Enter") { return };
+        if (event.key != "Enter") return;
         var inputTemp = parseFloat(document.getElementById('temp_input_label').value);
+        if (inputTemp < 0) {
+            document.getElementById('temp_input_label').value = (0).toFixed(5);
+            return;
+        }
     }
     if (inputTemp > Math.pow(10, document.getElementById('temp_input').max)) { 
-        document.getElementById('temp_input_label').value = parseFloat(Math.pow(10, document.getElementById('temp_input').value)).toFixed(5);
+        document.getElementById('temp_input_label').value = parseFloat(Math.pow(10, document.getElementById('temp_input').max)).toFixed(5);
         return; 
     }
+    //console.log(inputTemp)
 
     var min = document.getElementById('temp_input').min;
     var val= inputTemp <= min ? 0 : Math.pow(10, inputTemp);
@@ -221,10 +207,16 @@ function update_grid() {
     drawGrid();
 }
 
-function start_simulation() {
-    stop = false;
-    reset();
-    startAnimation();
+function start_stop() {
+    stop = !stop;
+    if (!stop) {
+
+        document.getElementById("start_stop").value = "Stop";
+        startAnimation();
+    }
+    else {
+        document.getElementById("start_stop").value = "Start";
+    }
 }
 
 function step_simulation() {
@@ -233,16 +225,24 @@ function step_simulation() {
     drawGrid();
 }
 
-function stop_simulation() {
-    stop = true;
-}
-
 function reset_data() {
     ising.reset_data();
     reset();
-    //steps.innerHTML = `Steps = 0`;
-    //m_avg.innerHTML = `M_avg = 0.00\tM = 0.00`;
-    //u_avg.innerHTML = `U_avg = 0.00\tU = 0.00`;
+}
+
+function reset_model() {
+    var newB = ising.get_B();
+    var newT = ising.get_T();
+    var newS = parseInt(document.getElementById('gridsize').value);
+
+    ising = IsingModell.new(newS, newB, newT, 1, 0.5, BigInt(Math.floor(Math.random() * 100000)));
+    drawGrid();
+    update_values();
+}
+
+function magnetize_grid() {
+    ising.magnetize();
+    drawGrid();
 }
 
 function t_change_reset() {
