@@ -1,4 +1,3 @@
-mod utils;
 mod ising;
 
 use wasm_bindgen::prelude::*;

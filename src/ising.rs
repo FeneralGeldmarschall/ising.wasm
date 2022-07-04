@@ -118,7 +118,8 @@ impl IsingModell {
 
     // Sets the spin to value... seems pretty useless, maybe remove later
     fn set_spin(&mut self, x: usize, y: usize, value: i8) {
-        self.grid[self.get_idx(x, y)] = value;
+        let idx: usize = self.get_idx(x, y);
+        self.grid[idx] = value;
     }
 
     // Calculates the Energy of the current configuration
