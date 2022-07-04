@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   web:
-    container_name: ising-webcanvas
+    container_name: ising.wasm
     #image: justus557/ising-web
     build:
       context: .
