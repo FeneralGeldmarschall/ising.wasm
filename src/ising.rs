@@ -16,21 +16,22 @@ pub struct IsingModell {
     T: f32, // Temperature
     I: f32, // coppling constant
     U: f32, // Energy
-    U_avg: f32,
+    U_avg: f32, // Energy average
     M: f32, // Magnetization in absolute units
-    M_avg: f32,
-    mc_step: u32,
-    rng: SmallRng,
-    changed: Vec<u32>
+    M_avg: f32, // Magnetization abs average, normalized
+    mc_step: u32, // How many mc steps the System already did
+    rng: SmallRng, // rng generator
+    changed: Vec<u32> // list of spins that changed compared to previous grid, used only for faster rendering
 }
 
 #[wasm_bindgen]
 impl IsingModell {
     pub fn new(size: usize, b: f32, t: f32, i: f32, up: f64, seed: u64) -> IsingModell {
-        //let mut model = IsingModell { N: size, grid: vec![vec![0i8; size]; size], M: (0.0), B: (b), U: (0.0), T: (t), I: (i) , rng: (StdRng::seed_from_u64(seed))};
         let mut rng = SmallRng::seed_from_u64(seed);
         let mut vector: Vec<i8> = Vec::with_capacity(size * size);
         let mut m = 0.0;
+
+        // Gnerate Lattice and populate it
         for _y in 0..size {
             for _x in 0..size {
                 let rng_spin = rng.gen_bool(up) as i8 * 2 - 1;
@@ -59,12 +60,8 @@ impl IsingModell {
                              U_avg: (0.0), T: (t), I: (i) , mc_step: (0), rng: (rng), changed: (ch)};
     }
 
-    // Runs mc_steps of the Metropolis algorithm
-    //pub fn run_
-
     // Runs mc_steps steps of the Metropolis algorithm
     pub fn run(&mut self, mc_steps: u32) -> u32 {
-        // Create plot directory only if we intend to plot the grid
         self.changed.clear();
         let S_squared: f32 = (self.S * self.S) as f32;
         let U_max: f32 = self.I * 2.0; // No Bmax here coz average would be fucked when changing B field
@@ -78,10 +75,8 @@ impl IsingModell {
                 self.try_random_flip();
             }           
             
-            self.M_avg += self.M;//S_squared;
-            self.U_avg += self.U/U_max;//S_squared;
-            
-            //if (!silent && i%(mc_steps/100)) { println!("Progress {:3.2}%", (i as f32/mc_steps as f32) * 100.0); }
+            self.M_avg += self.M;
+            self.U_avg += self.U/U_max;
         }
         self.mc_step += mc_steps;
         self.M_avg /= (self.mc_step as f32 * S_squared);// /= mc_steps as f32;
@@ -91,50 +86,6 @@ impl IsingModell {
         //self.M_avg = self.M_avg.abs();
     }
 
-    // Plots a single picture of the current spin configuration and saves it as png
-    /*pub fn plot_grid(&self, caption: String, path: String) -> Result<(), Box<dyn std::error::Error>> {
-        let root = BitMapBackend::new(&path, (1080, 1080)).into_drawing_area();
-        root.fill(&WHITE)?;
-        let mut chart = ChartBuilder::on(&root)
-            .caption(&caption, ("sans-serif", 50i32))
-            .margin(5i32)
-            .top_x_label_area_size(40i32)
-            .y_label_area_size(40i32)
-            .build_cartesian_2d(0i32..self.S as i32, self.S as i32..0i32)?;
-
-        chart
-            .configure_mesh()
-            .x_labels(15usize)
-            .y_labels(15usize)
-            .x_label_offset(35i32)
-            .y_label_offset(25i32)
-            .disable_x_mesh()
-            .disable_y_mesh()
-            .label_style(("sans-serif", 20i32))
-            .draw()?;
-
-        chart.draw_series(
-            self.grid
-                .iter()
-                .zip(0..self.S)
-                .map(|(it, y)| it.iter().zip(0..self.S).map(move |(value, x)| (value, x as i32, y as i32)))
-                .flatten()
-                .map(|(value, x, y)| {
-                    Rectangle::new(
-                        [(x, y), (x + 1, y + 1)],
-                        RGBColor(
-                            (126 + *value * 126) as u8,
-                            (126 + *value * 126) as u8,
-                            (126 + *value * 126) as u8
-                        )
-                        .filled(),
-                    )
-                }),
-        )?;
-
-        return Ok(());
-    }*/
-
     // Picks a random spin to be flipped, calculates energy dU needed to flip it
     // and then, according to the Metropolis algorithm, flips it or not
     // If spin is flipped it updates the Energy
@@ -142,20 +93,18 @@ impl IsingModell {
         let idx: usize = self.rng.gen_range(0..(self.S * self.S) as u32) as usize;
         let x: usize = (idx - (idx % self.S))/self.S;
         let y: usize = idx % self.S;
-        let du: f32 = self.calc_dU(x, y);//, self.grid[x][y] * -1i8);
+        let dU: f32 = self.calc_dU(x, y);//, self.grid[x][y] * -1i8);
         // let rng = self.rng.gen_range(0.0..1.0);
 
         // I dont combine these 2 ifs for better readability
         // Makes the Metroplois step here more clear
-        if  du <= 0.0 {
+        if  dU <= 0.0 {
             self.flip_spin(x, y);
-            self.U += du;
-            //dbg!("Flipping because du {}", du);
+            self.U += dU;
         }
-        else if self.rng.gen_range(0.0..1.0) <= std::f32::consts::E.powf(-du/self.T) {
+        else if self.rng.gen_range(0.0..1.0) <= std::f32::consts::E.powf(-dU/self.T) {
             self.flip_spin(x, y);
-            self.U += du;
-            //dbg!("Flipping because rng {}", rng);
+            self.U += dU;
         }
     }
 
@@ -169,8 +118,7 @@ impl IsingModell {
 
     // Sets the spin to value... seems pretty useless, maybe remove later
     fn set_spin(&mut self, x: usize, y: usize, value: i8) {
-        let idx: usize = self.get_idx(x, y);
-        self.grid[idx] = value;
+        self.grid[self.get_idx(x, y)] = value;
     }
 
     // Calculates the Energy of the current configuration
@@ -184,7 +132,10 @@ impl IsingModell {
                 let yp = (y + 1) % self.S;
                 let xm = (x + self.S - 1) % self.S;
                 let ym = (y + self.S - 1) % self.S;
-                i_energy += (self.grid[self.get_idx(x, y)] * (self.grid[self.get_idx(xp, y)] + self.grid[self.get_idx(xm, y)] + self.grid[self.get_idx(x, yp)] + self.grid[self.get_idx(x, ym)])) as f32; 
+                i_energy += (self.grid[self.get_idx(x, y)] * (self.grid[self.get_idx(xp, y)] 
+                                                            + self.grid[self.get_idx(xm, y)] 
+                                                            + self.grid[self.get_idx(x, yp)] 
+                                                            + self.grid[self.get_idx(x, ym)])) as f32; 
             }
         }
 
@@ -204,6 +155,7 @@ impl IsingModell {
                                                                     + self.grid[self.get_idx(x, ym)]) as f32;
     }
 
+    // Loads of helper functions here
     #[inline(always)]
     fn get_idx(&self, x: usize, y: usize) -> usize {
         return y * self.S + x;
@@ -281,14 +233,6 @@ impl IsingModell {
         self.M = self.grid.iter().map(|&i| i as f32).sum();
         self.U = self.calc_U();
         self.mc_step += 1;
-        /*self.M_avg *= (self.S as f32 * self.S as f32 * self.mc_step as f32);
-        self.U_avg *= (self.S as f32 * self.S as f32 * self.mc_step as f32);
-        self.M_avg += self.M;
-        self.U_avg += self.U/self.I * 2.0;
-        self.M_avg /= (self.S as f32 * self.S as f32 + (self.mc_step + 1) as f32); 
-        self.U_avg /= (self.S as f32 * self.S as f32 + (self.mc_step + 1) as f32);*/
-        //self.M_avg += self.M/(self.S as f32 * self.S as f32 * self.mc_step as f32);
-        //self.U_avg += self.U/(self.I * 2.0 * self.S as f32 * self.S as f32 * self.mc_step as f32);
     }
 }
 }
