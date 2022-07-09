@@ -25,3 +25,9 @@ npm install
 ```
 npm run start
 ```
+
+### Or use Docker!
+
+```
+docker-compose up
+```
