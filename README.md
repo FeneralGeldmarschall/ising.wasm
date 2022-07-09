@@ -31,3 +31,5 @@ npm run start
 ```
 docker-compose up
 ```
+
+### And then access via browser on `localhost:8080`
