@@ -1,4 +1,4 @@
-<div align="center">
+<!--<div align="center">-->
 
 ## About
 
@@ -6,32 +6,21 @@ A 2D Ising Simulation written in Rust and rendered in JS. Combined through the p
 <br>
 Rendering part is heavily inspired by mattbierbaum's <a href="https://github.com/mattbierbaum/ising.js">ising.js</a>
 
-CLick <a href="https://ising.dasobereviertel.duckdns.org">here</a> for live demo.
+Click <a href="https://ising.dasobereviertel.duckdns.org">here</a> for live demo.
 
 ## Usage
 
-### Build with `wasm-pack build`
+ 1. Build with `wasm-pack build`
 
-```
-wasm-pack build
-```
+ 2. Change to `www` directory
 
-### Install npm dependencies with `npm install`
+ 3. Install npm dependencies with `npm install`
 
-```
-npm install
-```
+ 4. Run local server with `npm run start`
 
-### Run local server with `npm run start`
-
-```
-npm run start
-```
+ 5. Access via browser on `localhost:8080`
 
 ### Or use Docker!
 
-```
-docker-compose up
-```
-
-### And then access via browser on `localhost:8080`
+Just run `docker-compose up`
+and then access via browser on `localhost:8080`
