@@ -10,18 +10,18 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub struct IsingModell {
-    S: usize, // Size of Grid row, NxN Spins
-    grid: Vec<i8>, // Grid
-    B: f32, // external B field
-    T: f32, // Temperature
-    I: f32, // coppling constant
-    U: f32, // Energy
-    U_avg: f32, // Energy average
-    M: f32, // Magnetization in absolute units
-    M_avg: f32, // Magnetization abs average, normalized
-    mc_step: u32, // How many mc steps the System already did
-    rng: SmallRng, // rng generator
-    changed: Vec<u32> // list of spins that changed compared to previous grid, used only for faster rendering
+    S: usize,               // Size of Grid row, SxS Spins
+    grid: Vec<i8>,          // Grid containing the spins; perhaps use a bitvector...
+    B: f32,                 // external magnetic (B) field
+    T: f32,                 // Temperature
+    I: f32,                 // coppling constant; usually 1 but can be variable
+    U: f32,                 // Energy of the current configuration
+    U_avg: f32,             // Energy average
+    M: f32,                 // Magnetization of the current configuration in absolute units
+    M_avg: f32,             // normalized, absolute Magnetization average
+    mc_step: u32,           // How many Monte Carlo steps the System already did
+    rng: SmallRng,          // RNG generator; SmallRng is faster
+    changed: Vec<u32>       // list of spins that changed during last Monte Carlo Step; used for faster rendering
 }
 
 #[wasm_bindgen]
@@ -31,7 +31,7 @@ impl IsingModell {
         let mut vector: Vec<i8> = Vec::with_capacity(size * size);
         let mut m = 0.0;
 
-        // Gnerate Lattice and populate it
+        // Generate Lattice and populate it
         for _y in 0..size {
             for _x in 0..size {
                 let rng_spin = rng.gen_bool(up) as i8 * 2 - 1;
@@ -64,7 +64,7 @@ impl IsingModell {
     pub fn run(&mut self, mc_steps: u32) -> u32 {
         self.changed.clear();
         let S_squared: f32 = (self.S * self.S) as f32;
-        let U_max: f32 = self.I * 2.0; // No Bmax here coz average would be fucked when changing B field
+        let U_max: f32 = self.I * 2.0; // No / Bmax here coz average would be fucked when changing B field
         self.M_avg *= (self.mc_step as f32 * S_squared);
         self.U_avg *= (self.mc_step as f32 * S_squared);
 
@@ -94,7 +94,6 @@ impl IsingModell {
         let x: usize = (idx - (idx % self.S))/self.S;
         let y: usize = idx % self.S;
         let dU: f32 = self.calc_dU(x, y);//, self.grid[x][y] * -1i8);
-        // let rng = self.rng.gen_range(0.0..1.0);
 
         // I dont combine these 2 ifs for better readability
         // Makes the Metroplois step here more clear
@@ -226,12 +225,14 @@ impl IsingModell {
         self.mc_step = 0;
     }
 
+    // Sets all Spins to 1 or -1, depending on the current
+    // dominant Spin direction
     pub fn magnetize(&mut self) {
         let spin = if self.M >= 0.0 { 1 } else { -1 };
         for i in 0..self.grid.len() {
             self.grid[i] = spin;
         }
-        self.M = self.grid.iter().map(|&i| i as f32).sum();
+        self.M = spin * self.grid.len();
         self.U = self.calc_U();
         self.mc_step += 1;
     }
