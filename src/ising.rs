@@ -232,7 +232,7 @@ impl IsingModell {
         for i in 0..self.grid.len() {
             self.grid[i] = spin;
         }
-        self.M = spin * self.grid.len();
+        self.M = spin as f32 * self.grid.len() as f32;
         self.U = self.calc_U();
         self.mc_step += 1;
     }
