@@ -6,7 +6,7 @@ A 2D Ising Simulation written in Rust and rendered in JS. Combined through the p
 <br>
 Rendering part is heavily inspired by mattbierbaum's <a href="https://github.com/mattbierbaum/ising.js">ising.js</a>
 
-Click <a href="https://ising.dasobereviertel.de">here</a> for live demo.
+Click <a href="https://feneralgeldmarschall.github.io/">here</a> for live demo.
 
 ## Usage
 
